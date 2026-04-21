@@ -19,7 +19,7 @@ jobs:
       - name: Organize and Commit PDF
         run: |
           mkdir -p docs
-          mv hardware/home_emf_beacon.pdf docs/emf_beacon_schematic.pdf
+          mv hardware/sch.pdf docs/emf_beacon_schematic.pdf
           
           # Configure Git
           git config --global user.name "github-actions[bot]"
