@@ -1,22 +1,31 @@
-name: 'Generate schematic PDF'
-#desciption: 'Generate a pdf schematic of the KiCAD project'
+name: Export Schematic PDF
 on: [push]
 
 jobs:
   kicad_job:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Allows the action to push the commit back
     steps:
-      - name Checkout
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Export PDF
         uses: sparkengineering/kicad-action@v4
         with:
-	  kicad_sch: ./hardware/home_emf_beacon.kicad_sch
-	  sch_pdf: true
+          kicad_sch: hardware/home_emf_beacon.kicad_sch
+          sch_pdf: true
 
-      - name: Upload PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: Schematic-PDF
-          path: '.docs/emf_beacon_schematic.pdf'
+      - name: Organize and Commit PDF
+        run: |
+          mkdir -p docs
+          mv hardware/home_emf_beacon.pdf docs/emf_beacon_schematic.pdf
+          
+          # Configure Git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+          
+          # Stage and push the changes
+          git add docs/emf_beacon_schematic.pdf
+          git commit -m "docs: auto-generate schematic PDF" || echo "No changes to commit"
+          git push
