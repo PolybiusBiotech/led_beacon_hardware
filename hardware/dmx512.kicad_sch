@@ -5040,6 +5040,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C274409"
+			(at 38.1 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "936d232e-3ccc-4733-8590-37276975ca3d")
 		)
@@ -6411,6 +6420,15 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 38.1 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C274409"
 			(at 38.1 53.34 0)
 			(effects
 				(font

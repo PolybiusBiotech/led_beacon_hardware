@@ -1726,6 +1726,17 @@
 		)
 		(uuid "be0cadd4-125e-4b1d-96f5-896b86ddc971")
 	)
+	(text "Snubbers?\n10R 0402 & 10nF 0402 across Vds"
+		(exclude_from_sim no)
+		(at 143.764 169.926 0)
+		(effects
+			(font
+				(size 2.54 2.54)
+				(color 255 0 0 1)
+			)
+		)
+		(uuid "ecbb50b7-abd1-49cc-b4f6-f162ed15f2fd")
+	)
 	(junction
 		(at 255.27 77.47)
 		(diameter 0)

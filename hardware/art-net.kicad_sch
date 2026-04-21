@@ -6058,6 +6058,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C1980462"
+			(at 119.38 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "1ca85b79-14fd-474d-9540-c2900e2d4d36")
 		)
@@ -7329,6 +7338,15 @@
 			)
 		)
 		(property "MPN" ""
+			(at 177.8 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C45223"
 			(at 177.8 87.63 0)
 			(effects
 				(font
