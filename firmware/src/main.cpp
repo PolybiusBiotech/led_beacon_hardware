@@ -70,17 +70,21 @@ void setup(void) {
   Serial.println("I²C initialised...");
 
   // init MCP23017
-  //mcp.begin_I2C(0x20, &Wire);
-  //for(int i = 0; i < 16; i++) mcp.pinMode(i, INPUT_PULLUP);
-  // init other pins
-  //mcp.setupInterrupts(true, true, LOW);
+  mcp.begin_I2C(0x20, &Wire);
+  mcp.setupInterrupts(true, true, LOW);
+  for(int i = 0; i < 16; i++) {
+    mcp.pinMode(i, INPUT_PULLUP);
+    if (i == 7 or i > 9) continue; // only configures 0→6 & 8→9
+    mcp.setupInterruptPin(i, CHANGE);
+  }
 
   // init PCA9685
-  //leds.begin();
-  //leds.setPWMFreq(1000);
-  //leds.setOutputMode(true); // LEDs driven by external NMOS
-  //for (int i = 0; i < led_count; i++) leds.setPWM(i, 410*i, 0);
+  leds.begin();
+  leds.setPWMFreq(1000);
+  leds.setOutputMode(true); // LEDs driven by external NMOS
+  for (int i = 0; i < led_count; i++) leds.setPWM(i, 410*i, 0);
   digitalWrite(PIN_LED_OE, LOW); // enable LEDs!
+  
 
   // init DMX
   dmx_config_t config = DMX_CONFIG_DEFAULT;
@@ -161,6 +165,11 @@ void loop(void) {
       // over voltage
         
     // check DMX address
+    if (digitalRead(PIN_I2C_INT) == LOW) {
+      uint16_t dmx_adr_switches = ~mcp.readGPIOAB(); // read and flip switch states from ACTIVE_LOW to ACTIVE_HIGH
+      dmx_adr_switches = (dmx_adr_switches & 0x7F) | ((dmx_adr_switches & 0x0300) >> 1);  // keep 0→6 & 8→9 and concatenate to remove 7
+      dmx_address = dmx_adr_switches + 1; // offset and save DMX address
+    }
 
     // update USB status
     
