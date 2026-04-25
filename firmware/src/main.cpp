@@ -15,6 +15,7 @@ const uint32_t led_count = 10;
 const uint32_t slot_count = led_count * 2; // 2 slots per LED
 const uint32_t led_loop = 100; // LED loop duration in ms
 const uint32_t ctrl_loop = 5000; // control loop duration in ms
+const int32_t warning_temp = 500000; // temp to disable LEDs in millicelcius
 
 /** Pin Map **/
 #define PIN_TEMP_MON  (0)
@@ -41,6 +42,7 @@ uint32_t last_led_update = 0x00;
 uint32_t last_ctrl_update = 0x00;
 int32_t current_temp = 0x00, min_temp, max_temp;
 uint32_t current_volts = 0x00, min_volts, max_volts;
+uint32_t current_uptime;
 uint8_t dmxData[slot_count];
 uint32_t dmx_address = 0x00;
 
@@ -189,20 +191,32 @@ void loop(void) {
   if (millis() - last_ctrl_update >= ctrl_loop) {
     last_ctrl_update = millis();
 
-    // do control stuff
+    // get current VCC in and temperature
     current_volts = get_volts();
     current_temp = get_temp();
 
-    // update min/max temp/volts
-    min_temp = min(min_temp, current_temp);
-    max_temp = max(max_temp, current_temp);
+    // update min/max temp/volts    
+    if (current_temp > -50000 && current_temp < 150000) {
+      // but only if temp is between -50°C and 150°C
+      min_temp = min(min_temp, current_temp);
+      max_temp = max(max_temp, current_temp);
+    }
     min_volts = min(min_volts, current_volts);
     max_volts = max(max_volts, current_volts);
 
-    // optional warnings for:
-      // excessive temp
+    // dealing with excessive temp
+    if (current_temp >= warning_temp) {
+      digitalWrite(PIN_LED_OE, HIGH); // disable LEDs while too hot!
+    } else if (current_temp <= (warning_temp - 5000)) {
+      digitalWrite(PIN_LED_OE, LOW); // enable LEDs now it's cooler!
+    }
+    
+    // not sure how to handle:      
       // under voltage
       // over voltage
+    
+    current_uptime = esp_timer_get_time() / 1000000;
+    
         
     // check DMX address
     if (digitalRead(PIN_I2C_INT) == LOW) {
@@ -297,7 +311,7 @@ uint32_t get_volts(void) {
   }
   raw_volts /= 8;
 
-  // convert volts
+  // convert to millivolts
   raw_volts = ((raw_volts * lsb_2_uvolts) + 500) / 1000; // outputs millivolts
 
   return raw_volts;
