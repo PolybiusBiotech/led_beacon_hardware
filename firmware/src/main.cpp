@@ -42,13 +42,17 @@ uint32_t last_led_update = 0x00;
 uint32_t last_ctrl_update = 0x00;
 int32_t current_temp = 0x00, min_temp, max_temp;
 uint32_t current_volts = 0x00, min_volts, max_volts;
-uint32_t current_uptime;
-uint8_t dmxData[slot_count];
+uint32_t current_uptime = 0x00UL;
 uint32_t dmx_address = 0x00;
+uint8_t dmxData[slot_count];
+uint16_t led_brightness[led_count];
+uint8_t led_strobe[led_count];
+
 
 // put function declarations here:
 int32_t get_temp(void);
 uint32_t get_volts(void);
+uint16_t map_led_brightness(uint8_t);
 
 char init_string[] = "\r\nLED Beacon\r\nCompiled on " __DATE__ " " __TIME__ "\r\n";
 
@@ -135,8 +139,9 @@ void setup(void) {
     Serial.println("Request received!");
     String html = "<h1>LED Beacon Diagnostics</h1>";
     html += "<p>DMX Address: " + String(dmx_address) + "</p>";
-    html += "<p>VCC: " + String(current_volts, 2) + "V</p>";
-    html += "<p>Temp: " + String(current_temp, 2) + "&deg;C</p>";
+    html += "<p>VCC: " + String(((float)current_volts/1000), 2) + "V</p>";
+    html += "<p>Temp: " + String(((float)current_temp/1000), 2) + "&deg;C</p>";
+    html += "<p>Uptime: " + String(current_uptime) + "s</p>";
     request->send(200, "text/html", html); 
   });
   server.begin();
@@ -144,7 +149,7 @@ void setup(void) {
   // init OTA
 
 
-  // set min & max
+  // set starting min & max
   current_temp = get_temp();
   min_temp = current_temp;
   max_temp = current_temp;
@@ -152,6 +157,7 @@ void setup(void) {
   min_volts = current_volts;
   max_volts = current_volts;
 
+  Serial.println("Setup complete!\r\nStarting loop...");
 }
 
 void loop(void) {
@@ -163,6 +169,9 @@ void loop(void) {
         dmx_read_offset(dmx_num, dmx_address, dmxData, slot_count);
         //lastValidDmxTime = millis();
         //dmxSignalLost = false;
+
+        // check if it's changing a value, if so set a flag for that LED
+        // update new value
     }
   }
   
@@ -184,6 +193,12 @@ void loop(void) {
     // animations
 
     // how to handle strobes?
+    // freq: 1-30Hz, 0.289-16.667Hz
+    // msg: 0 = solid, 1 = slow, 255 = fast
+    // DMX 1   = 5.000 seconds
+    // DMX 255 = 0.033 seconds
+    // probably going to have to move this to an interrupt ISR.
+
 
 
   }
@@ -216,7 +231,7 @@ void loop(void) {
       // over voltage
     
     current_uptime = esp_timer_get_time() / 1000000;
-    
+    // time seconds is hard to digest, may need a function to make it pretty e.g. minutes/hours/days
         
     // check DMX address
     if (digitalRead(PIN_I2C_INT) == LOW) {
@@ -252,6 +267,11 @@ static const uint16_t gamma12_table[] = {
     3959, 4014, 4069, 4095
 };
 
+uint16_t map_led_brightness(uint8_t brightness) {
+  
+  return gamma12_table[brightness];
+}
+
 
 /** 
  * Lookup table for NCP15XH103F03RC 
@@ -263,6 +283,7 @@ struct TempPoint {
     int16_t temp;
 };
 
+// LUT for: 3.3V -> 10k Resistor -> IO0 -> Thermistor + 1uF -> GND
 const TempPoint lut[] = {
     {3115, -10}, {2703, 0},  {2263, 10}, {1850, 20}, 
     {1485, 30},  {1176, 40}, {924, 50},  {724, 60}, 
