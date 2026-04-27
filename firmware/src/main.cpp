@@ -193,7 +193,7 @@ void loop(void) {
           led_update_req[i] = true;
         }
 
-        new_half_period = map_led_period(dmx_data[i*2]);
+        new_half_period = map_led_period(dmx_data[i + led_count]);
         if (led_half_period[i] != new_half_period) {
           led_half_period[i] = new_half_period;
           if (new_half_period == 0) {
