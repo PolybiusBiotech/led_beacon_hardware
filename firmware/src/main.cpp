@@ -174,32 +174,29 @@ void setup(void) {
 
 void loop(void) {
   
-  // DMX stuff
+  // Get DMX packet and update LEDs
   dmx_packet_t packet;
   if (dmx_receive(dmx_num, &packet, 0)) {
     if (!packet.err) {
-        dmx_read_offset(dmx_num, dmx_address, dmx_data, slot_count);
-        last_valid_dmx = millis();
-        //dmxSignalLost = false;
+      dmx_read_offset(dmx_num, dmx_address, dmx_data, slot_count);
+      last_valid_dmx = millis();
+      //dmxSignalLost = false;
 
-        uint16_t new_brightness;
-        uint32_t new_period;
-        for (int i = 0; i < led_count; i++) {
-          new_brightness = map_led_brightness(dmx_data[i]);
-          if (led_brightness[i] != new_brightness) {
-            led_brightness[i] = new_brightness;
-            led_update_req[i] = true;
-          }
-
-          new_period = map_led_period(dmx_data[i*2]);
-          if (led_periods[i] != new_period) {
-            led_periods[i] = new_period;
-            // update gets handled as part of the timer
-          }
+      uint16_t new_brightness;
+      uint32_t new_period;
+      for (int i = 0; i < led_count; i++) {
+        new_brightness = map_led_brightness(dmx_data[i]);
+        if (led_brightness[i] != new_brightness) {
+          led_brightness[i] = new_brightness;
+          led_update_req[i] = true;
         }
 
-        // check if it's changing a value, if so set a flag for that LED
-        // update new value
+        new_period = map_led_period(dmx_data[i*2]);
+        if (led_periods[i] != new_period) {
+          led_periods[i] = new_period;
+          // update gets handled as part of the timer
+        }
+      }
     }
   }
 
@@ -251,12 +248,12 @@ void loop(void) {
       digitalWrite(PIN_LED_OE, LOW); // enable LEDs now it's cooler!
     }
     
-    // not sure how to handle:      
+    // not sure what actions to take on:      
       // under voltage
       // over voltage
     
     current_uptime = esp_timer_get_time() / 1000000;
-    // time seconds is hard to digest, may need a function to make it pretty e.g. minutes/hours/days
+    // uptime in seconds is hard to digest, may need a function to make it pretty e.g. minutes/hours/days
         
     // check DMX address
     if (digitalRead(PIN_I2C_INT) == LOW) {
