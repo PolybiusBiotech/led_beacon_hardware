@@ -212,6 +212,7 @@ void loop(void) {
         led_brightness[i] = 0x00;
         led_half_period[i] = 0x00;
         led_update_req[i] = true;
+        led_State[i] = true;
       }
     }
   }
