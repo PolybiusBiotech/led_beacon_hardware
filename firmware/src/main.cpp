@@ -14,6 +14,7 @@
 const uint32_t led_count = 10;
 const uint32_t slot_count = led_count * 2; // 2 slots per LED
 const uint32_t ctrl_loop = 5000; // control loop duration in ms
+const uint32_t hold_last = 4000; // how long to keep last value in ms
 const int32_t warning_temp = 500000; // temp to disable LEDs in millicelcius
 
 /** Pin Map **/
@@ -199,6 +200,17 @@ void loop(void) {
             led_update_req[i] = true;
           }
         }          
+      }
+    }
+  }
+
+  // handle DMX timeout
+  if (millis() - last_valid_dmx > hold_last) {
+    for (int i = 0; i < led_count; i++) {
+      if (led_brightness[i] != 0x00) {
+        led_brightness[i] = 0x00;
+        led_half_period[i] = 0x00;
+        led_update_req[i] = true;
       }
     }
   }
