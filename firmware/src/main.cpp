@@ -16,6 +16,7 @@ const uint32_t slot_count = led_count * 2; // 2 slots per LED
 const uint32_t ctrl_loop = 5000; // control loop duration in ms
 const uint32_t hold_last = 4000; // how long to keep last value in ms
 const int32_t warning_temp = 500000; // temp to disable LEDs in millicelcius
+const int wifi_channel = 1;
 
 /** Pin Map **/
 #define PIN_TEMP_MON  (0)
@@ -121,8 +122,6 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
-//<script>setTimeout(function(){ location.reload(); }, 5000);</script>
-
 void setup(void) {
   delay(2000);
 
@@ -141,9 +140,9 @@ void setup(void) {
   digitalWrite(PIN_LED, LOW);
   analogSetAttenuation(ADC_11db);
   Serial.println("GPIO initialised...");
-
+ 
   // init Timer
-  led_timer = timerBegin(0, 80, true); // 80Mhz/80 = 1M ticks/sec for 1us resolution
+  led_timer = timerBegin(1, 80, true); // 80Mhz/80 = 1M ticks/sec for 1us resolution
   timerAttachInterrupt(led_timer, &onTimer, true);
   timerAlarmWrite(led_timer, 1000, true); // trigger every 1000us
   timerAlarmEnable(led_timer);
@@ -206,7 +205,7 @@ void setup(void) {
   // init Watchdog
   
   // init WiFi
-  WiFi.softAP("LED_Beacon_Ctrl", "password123");
+  WiFi.softAP("LED_Beacon_Status", "password123", wifi_channel);
   IPAddress IP = WiFi.softAPIP();
   Serial.print("AP IP Address: ");
   Serial.println(IP);
