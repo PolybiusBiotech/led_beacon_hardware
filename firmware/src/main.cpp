@@ -71,12 +71,13 @@ const char index_html[] PROGMEM = R"rawliteral(
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
   <style>
     :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #00e676; --dim: #888; }
     body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
     header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
     .grid { display: flex; flex-wrap: wrap; gap: 15px; max-width: 900px; margin: auto; }
-    .card { background: var(--card); padding: 20px; border-radius: 16px; flex: 1 1 calc(50% - 30px); min-width: 280px; border: 1px solid #2a2a2a; text-align: center; }
+    .card { background: var(--card); padding: 20px; border-radius: 16px; flex: 1 1 calc(50%% - 30px); min-width: 280px; border: 1px solid #2a2a2a; text-align: center; }
     .card h3 { margin: 0 0 12px 0; font-size: 0.85rem; text-transform: uppercase; color: var(--dim); display: flex; justify-content: center; align-items: center; gap: 8px; }
     .val { font-size: 2.2rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
     .stats { font-size: 0.85rem; color: var(--dim); display: flex; justify-content: space-around; border-top: 1px solid #2a2a2a; padding-top: 10px; margin-top: 5px; }
@@ -85,7 +86,7 @@ const char index_html[] PROGMEM = R"rawliteral(
   </style>
 </head>
 <body>
-  <header><h1 style="margin:0; font-size: 1.5rem;">LED Beacon <span style="color:var(--accent)">Live</span></h1></header>
+  <header><h1 style="margin:0; font-size: 1.5rem;">LED Beacon</h1></header>
   <div class="grid">
     <div class="card">
       <h3>📟 DMX Status</h3>
@@ -116,10 +117,11 @@ const char index_html[] PROGMEM = R"rawliteral(
       </div>
     </div>
   </div>
-  <script>setTimeout(function(){ location.reload(); }, 5000);</script>
 </body>
 </html>
 )rawliteral";
+
+//<script>setTimeout(function(){ location.reload(); }, 5000);</script>
 
 void setup(void) {
   delay(2000);
@@ -211,11 +213,9 @@ void setup(void) {
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     Serial.println("Request received!");
     // The 'processor' argument tells the server to swap out the %VARIABLES%
-    request->send_P(200, "text/html", index_html, processor);
+    request->send(200, "text/html", index_html, processor);
   });
   server.begin();
-
-
 
   // init OTA
 
@@ -268,7 +268,7 @@ void loop(void) {
         led_brightness[i] = 0x00;
         led_half_period[i] = 0x00;
         led_update_req[i] = true;
-        led_State[i] = true;
+        led_state[i] = true;
       }
     }
   }
@@ -442,9 +442,9 @@ String processor(const String& var) {
   if(var == "VOLT")     return String(((float)current_volts/1000), 2) + "V";
   if(var == "VOLT_MIN") return String(((float)min_volts/1000), 2) + "V";
   if(var == "VOLT_MAX") return String(((float)max_volts/1000), 2) + "V";
-  if(var == "TEMP")     return String(((float)current_temp/1000), 2) + "°C";
-  if(var == "TEMP_MIN") return String(((float)min_temp/1000), 2) + "°C";
-  if(var == "TEMP_MAX") return String(((float)max_temp/1000), 2) + "°C";
+  if(var == "TEMP")     return String(((float)current_temp/1000), 2) + "&deg;C";
+  if(var == "TEMP_MIN") return String(((float)min_temp/1000), 2) + "&deg;C";
+  if(var == "TEMP_MAX") return String(((float)max_temp/1000), 2) + "&deg;C";
   if(var == "BUILD")    return String(__DATE__) + " " + String(__TIME__);
   if(var == "UPTIME") {
     uint32_t t = current_uptime;
@@ -459,7 +459,7 @@ String processor(const String& var) {
     if (m > 0 || h > 0 || d > 0) res += String(m) + "m ";
     res += String(s) + "s";
     return res;
-  }  
+  }
   return String();
 }
 
