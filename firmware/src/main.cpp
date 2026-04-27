@@ -66,6 +66,61 @@ String processor(const String&);
 
 char init_string[] = "\r\nLED Beacon\r\nCompiled on " __DATE__ " " __TIME__ "\r\n";
 
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #00e676; --dim: #888; }
+    body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 15px; max-width: 900px; margin: auto; }
+    .card { background: var(--card); padding: 20px; border-radius: 16px; flex: 1 1 calc(50% - 30px); min-width: 280px; border: 1px solid #2a2a2a; text-align: center; }
+    .card h3 { margin: 0 0 12px 0; font-size: 0.85rem; text-transform: uppercase; color: var(--dim); display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .val { font-size: 2.2rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .stats { font-size: 0.85rem; color: var(--dim); display: flex; justify-content: space-around; border-top: 1px solid #2a2a2a; padding-top: 10px; margin-top: 5px; }
+    .system-list { text-align: left; display: inline-block; font-size: 0.85rem; line-height: 1.6; }
+    .stat-label { color: #555; margin-right: 4px; }
+  </style>
+</head>
+<body>
+  <header><h1 style="margin:0; font-size: 1.5rem;">LED Beacon <span style="color:var(--accent)">Live</span></h1></header>
+  <div class="grid">
+    <div class="card">
+      <h3>📟 DMX Status</h3>
+      <div class="val">%DMX_ADDR%</div>
+      <div class="stats"><span><span class="stat-label">Last:</span>%LAST_DMX%</span></div>
+    </div>
+    <div class="card">
+      <h3>⚡ Voltage</h3>
+      <div class="val">%VOLT%</div>
+      <div class="stats">
+        <span><span class="stat-label">Min:</span>%VOLT_MIN%</span>
+        <span><span class="stat-label">Max:</span>%VOLT_MAX%</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🌡️ Temperature</h3>
+      <div class="val">%TEMP%</div>
+      <div class="stats">
+        <span><span class="stat-label">Min:</span>%TEMP_MIN%</span>
+        <span><span class="stat-label">Max:</span>%TEMP_MAX%</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>⚙️ System</h3>
+      <div class="system-list">
+        <div><span class="stat-label">Uptime:</span> %UPTIME%</div>
+        <div><span class="stat-label">Build:</span> %BUILD%</div>
+      </div>
+    </div>
+  </div>
+  <script>setTimeout(function(){ location.reload(); }, 5000);</script>
+</body>
+</html>
+)rawliteral";
+
 void setup(void) {
   delay(2000);
 
