@@ -23,6 +23,7 @@ const int32_t warning_temp = 500000; // temp to disable LEDs in millicelcius
 #define PIN_SDA       (2)
 #define PIN_SCL       (3)
 #define PIN_I2C_INT   (4)
+#define PIN_WIFI_EN   (5)
 #define PIN_DMX_EN    (6)
 #define PIN_LED_OE    (7)
 #define PIN_LED       (8)
@@ -51,6 +52,7 @@ uint32_t led_half_period[led_count] = {0x00};
 volatile uint32_t led_strobe_cnt[led_count] = {0x00};
 volatile bool led_state[led_count] = {false};
 volatile bool led_update_req[led_count] = {false};
+bool wifi_ap_active = false;
 
 
 
@@ -74,6 +76,7 @@ void setup(void) {
   pinMode(PIN_I2C_INT, INPUT);
   pinMode(PIN_LED_OE, OUTPUT);
   pinMode(PIN_DMX_EN, OUTPUT);
+  pinMode(PIN_WIFI_EN, INPUT_PULLUP);
   pinMode(PIN_LED, OUTPUT);
   digitalWrite(PIN_LED_OE, HIGH);
   digitalWrite(PIN_DMX_EN, LOW);
@@ -244,6 +247,23 @@ void loop(void) {
   
   if (millis() - last_ctrl_update >= ctrl_loop) {
     last_ctrl_update = millis();
+
+    //enable/disable WiFi AP
+    
+    bool wifi_enable = ~digitalRead(PIN_WIFI_EN);
+    /*
+    if (wifi_enable && !wifi_ap_active) {
+      WiFi.softAP("LED_Beacon_Ctrl", "password123");
+      server.begin();
+      apActive = true;
+    } 
+    else if (!wifi_enable && wifi_ap_active) {
+      server.end();
+      WiFi.softAPdisconnect(true);
+      WiFi.mode(WIFI_OFF);
+      apActive = false;
+    }
+    */
 
     // get current VCC in and temperature
     current_volts = get_volts();
