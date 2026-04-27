@@ -46,7 +46,7 @@ uint32_t current_uptime = 0x00;
 uint32_t dmx_address = 0x00;
 uint8_t dmx_data[slot_count] = {0x00};
 uint16_t led_brightness[led_count] = {0x00};
-uint32_t led_periods[led_count] = {0x00};
+uint32_t led_half_period[led_count] = {0x00};
 volatile uint32_t led_strobe_cnt[led_count] = {0x00};
 volatile bool led_state[led_count] = {false};
 volatile bool led_update_req[led_count] = {false};
@@ -183,7 +183,7 @@ void loop(void) {
       //dmxSignalLost = false;
 
       uint16_t new_brightness;
-      uint32_t new_period;
+      uint32_t new_half_period;
       for (int i = 0; i < led_count; i++) {
         new_brightness = map_led_brightness(dmx_data[i]);
         if (led_brightness[i] != new_brightness) {
@@ -191,11 +191,11 @@ void loop(void) {
           led_update_req[i] = true;
         }
 
-        new_period = map_led_period(dmx_data[i*2]);
-        if (led_periods[i] != new_period) {
-          led_periods[i] = new_period;
+        new_half_period = map_led_period(dmx_data[i*2]);
+        if (led_half_period[i] != new_half_period) {
+          led_half_period[i] = new_half_period;
           // update gets handled as part of the timer
-        }
+        }          
       }
     }
   }
@@ -271,7 +271,7 @@ void loop(void) {
 void IRAM_ATTR onTimer(void) {
   for (int i = 0; i < 10; i++) {
     led_strobe_cnt[i]++;
-    if (led_strobe_cnt[i] >= led_periods[i]) {
+    if (led_strobe_cnt[i] >= led_half_period[i]) {
       led_strobe_cnt[i] = 0;
       led_state[i] = !led_state[i];
       led_update_req[i] = true;
@@ -306,6 +306,26 @@ uint16_t map_led_brightness(uint8_t brightness) {
   return gamma12_table[brightness];
 }
 
+// This table stores the ms delay between TOGGLES (Half-Period)
+static const uint32_t strobe_half_period_table[] PROGMEM = {
+    0, 2500, 2415, 2336, 2261, 2191, 2126, 2064, 2006, 1951, 1899, 1850, 1803, 1759, 1716, 1676,
+    1637, 1600, 1565, 1531, 1499, 1468, 1438, 1409, 1382, 1355, 1329, 1305, 1281, 1258, 1236, 1214,
+    1194, 1174, 1154, 1136, 1118, 1100, 1083, 1067, 1051, 1035, 1020, 1006, 992, 978, 965, 952,
+    939, 927, 915, 903, 892, 881, 870, 860, 850, 840, 830, 821, 811, 802, 793, 785,
+    776, 768, 760, 752, 745, 737, 730, 723, 716, 709, 702, 696, 689, 683, 677, 671,
+    665, 659, 653, 647, 642, 636, 631, 626, 621, 616, 611, 606, 601, 597, 592, 588,
+    583, 579, 575, 571, 566, 562, 558, 554, 550, 547, 543, 539, 536, 532, 529, 525,
+    522, 518, 515, 512, 508, 505, 502, 499, 496, 493, 490, 487, 484, 481, 478, 475,
+    472, 470, 467, 464, 462, 459, 456, 454, 451, 449, 446, 444, 441, 439, 437, 434,
+    432, 430, 427, 425, 423, 421, 418, 416, 414, 412, 410, 408, 406, 404, 402, 400,
+    398, 396, 394, 392, 390, 388, 386, 384, 383, 381, 379, 377, 376, 374, 372, 371,
+    369, 367, 366, 364, 362, 361, 359, 358, 356, 355, 353, 352, 350, 349, 348, 346,
+    345, 343, 342, 341, 339, 338, 337, 335, 334, 333, 331, 330, 329, 328, 326, 325,
+    324, 323, 322, 321, 319, 318, 317, 316, 315, 314, 313, 312, 311, 310, 309, 308,
+    306, 305, 304, 303, 302, 301, 300, 299, 298, 297, 296, 295, 294, 293, 292, 291,
+    290, 289, 288, 287, 286, 285, 284, 283, 282, 281, 281, 280, 279, 278, 277, 16
+};
+
 uint32_t map_led_period(uint8_t period) {
 
   // FILL ME OUT!
@@ -314,7 +334,7 @@ uint32_t map_led_period(uint8_t period) {
   // DMX 1   = 5.000 seconds
   // DMX 255 = 0.033 seconds
   
-  return 0;
+  return strobe_half_period_table[period];
 }
 
 
