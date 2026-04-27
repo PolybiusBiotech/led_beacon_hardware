@@ -194,7 +194,10 @@ void loop(void) {
         new_half_period = map_led_period(dmx_data[i*2]);
         if (led_half_period[i] != new_half_period) {
           led_half_period[i] = new_half_period;
-          // update gets handled as part of the timer
+          if (new_half_period == 0) {
+            // force an update if LED is to be fully on
+            led_update_req[i] = true;
+          }
         }          
       }
     }
@@ -270,6 +273,16 @@ void loop(void) {
 
 void IRAM_ATTR onTimer(void) {
   for (int i = 0; i < 10; i++) {
+    
+    if (led_half_period[i] == 0) {
+      if (!led_state[i]) { 
+        led_state[i] = true;
+        led_update_req[i] = true;
+      }
+      led_strobe_cnt[i] = 0; // Keep counter reset
+      continue;
+    }
+
     led_strobe_cnt[i]++;
     if (led_strobe_cnt[i] >= led_half_period[i]) {
       led_strobe_cnt[i] = 0;
