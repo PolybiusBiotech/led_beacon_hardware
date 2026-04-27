@@ -62,6 +62,7 @@ uint32_t get_volts(void);
 uint16_t map_led_brightness(uint8_t);
 uint32_t map_led_period(uint8_t);
 void onTimer(void);
+String processor(const String&);
 
 char init_string[] = "\r\nLED Beacon\r\nCompiled on " __DATE__ " " __TIME__ "\r\n";
 
@@ -290,8 +291,7 @@ void loop(void) {
       // over voltage
     
     current_uptime = esp_timer_get_time() / 1000000;
-    // uptime in seconds is hard to digest, may need a function to make it pretty e.g. minutes/hours/days
-        
+       
     // check DMX address
     if (digitalRead(PIN_I2C_INT) == LOW) {
       uint16_t dmx_adr_switches = ~mcp.readGPIOAB(); // read and flip switch states from ACTIVE_LOW to ACTIVE_HIGH
@@ -384,6 +384,32 @@ uint32_t map_led_period(uint8_t period) {
   return strobe_half_period_table[period];
 }
 
+String processor(const String& var) {
+  if(var == "DMX_ADDR") return String(dmx_address);
+  if(var == "LAST_DMX") return String((millis() - last_valid_dmx)/1000) + "s ago";
+  if(var == "VOLT")     return String(((float)current_volts/1000), 2) + "V";
+  if(var == "VOLT_MIN") return String(((float)min_volts/1000), 2) + "V";
+  if(var == "VOLT_MAX") return String(((float)max_volts/1000), 2) + "V";
+  if(var == "TEMP")     return String(((float)current_temp/1000), 2) + "°C";
+  if(var == "TEMP_MIN") return String(((float)min_temp/1000), 2) + "°C";
+  if(var == "TEMP_MAX") return String(((float)max_temp/1000), 2) + "°C";
+  if(var == "BUILD")    return String(__DATE__) + " " + String(__TIME__);
+  if(var == "UPTIME") {
+    uint32_t t = current_uptime;
+    uint32_t s = t % 60;
+    uint32_t m = (t / 60) % 60;
+    uint32_t h = (t / 3600) % 24;
+    uint32_t d = t / 86400;
+  
+    String res = "";
+    if (d > 0) res += String(d) + "d ";
+    if (h > 0 || d > 0) res += String(h) + "h ";
+    if (m > 0 || h > 0 || d > 0) res += String(m) + "m ";
+    res += String(s) + "s";
+    return res;
+  }  
+  return String();
+}
 
 /** 
  * Lookup table for NCP15XH103F03RC 
