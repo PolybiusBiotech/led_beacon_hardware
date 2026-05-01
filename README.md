@@ -1,5 +1,5 @@
 # LED Beacon 🚀
-> Upgrading cheap beacons for professional DMX/Art-Net stage control.
+> Upgrading cheap LED beacons for professional DMX/Art-Net stage control.
 
 ![Hardware Render](./docs/render.png) <!-- Tip: Export a nice 3D render from KiCAD -->
 
@@ -34,16 +34,21 @@
 
 ## User Guide
 
-1. apply power via DC connector, 12V ±30% from a 3A capable supply.
-2. attach to DMX bus with 2x XLR 5pin cables
-  a) if at the end of the bus use a terminator plug
-3. select a DMX address
-  a) this light consumes 20 slots so avoid address above 492.
-  b) ensure that this light is >20 slots away from the next lights.
-4. Disable the WiFi AP unless needed for diagnostics
-5. Use your DMX controller to send packets on the DMX bus.
-  a) slots 1 to 10 control the brightness, 0x00 is off, 0xFF is on
-  b) slots 11 to 20 control the strobe effect, 0x00 is fully on, 0x01 strobes at 0.2Hz, 0xFF strobes at 20Hz.
+1. Apply power via DC connector, 12V ±30% from a 3A capable supply.
+2. Attach to DMX chain with 2x XLR 5pin cables
+   * If at the end of the bus use a terminator plug
+3. Select a DMX address with the DIP switch
+   * This light consumes 20 slots so avoid address above 492.
+   * Ensure that this light is >20 slots away from the next lights.
+4. Disable the WiFi AP with the DIP switch unless needed for diagnostics
+5. Use your DMX controller to send packets on the DMX chain.
+   * Slots 1 to 10 control the brightness per channel
+     * `0x00` is off
+     * `0xFF` is on
+   * Slots 11 to 20 control the strobe effect per channel
+     * `0x00` is fully on
+     * `0x01` strobes at 0.2Hz
+     * `0xFF` strobes at 20Hz
 6. Enjoy!
 
 ---
